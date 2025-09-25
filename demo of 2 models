@@ -1,0 +1,64 @@
+
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import classification_report, accuracy_score
+
+#load the dataset
+df = pd.read_csv("/kaggle/input/ufo-sightings/scrubbed.csv")
+# shows the dataset
+print(df.head())
+
+
+# cleaning
+#keeping the columns we will be using
+df = df[['state', 'shape']]
+
+#drop missing values
+df=df.dropna()
+
+#explain what catagorical data is all the columns we are using are catagorical
+#encoding catagorical data(state, and country)
+label_enc = LabelEncoder()
+df['state_enc'] = label_enc.fit_transform(df['state'])
+
+df['shape_enc'] = label_enc.fit_transform(df['shape'])
+
+#defining x(features) and y(target)
+
+X = df[['state_enc']]
+y = df[['shape_enc']]
+
+#spliting the dataset in to a test a train
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.3)
+
+#train the model
+# we are using knn explain what knn is 
+#I chose this because the hyperparameters are easy to understand
+
+#creating the model
+knn = KNeighborsClassifier(n_neighbors = 5)
+#deploying the model
+#training on the train values
+knn.fit(X_train, y_train)
+#predicting on the test values
+y_pred_knn = knn.predict(X_test)
+
+
+dt = DecisionTreeClassifier(max_depth=5, random_state=42)
+dt.fit(X_train, y_train)
+y_pred_dt = dt.predict(X_test)
+
+
+#evaluation
+# I fear that this might not be readable for the people that dont have much experience 
+print("Accuracy:", accuracy_score(y_test, y_pred_knn))
+
+print("\nDecision Tree Results:")
+print("Accuracy:", accuracy_score(y_test, y_pred_dt))
+
+
+common_shapes = df_clean.groupby("state")["shape"].agg(lambda x: x.value_counts().idxmax())
+print(common_shapes)
